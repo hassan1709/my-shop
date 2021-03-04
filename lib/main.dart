@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/products_overview_screen.dart';
-import 'providers/products.dart';
+import 'screens/product_detail_screen.dart';
+import 'providers/products_provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,7 +13,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (ctx) => Products(),
+      // The default constructor of ChangeNotifierProvider is better in this case for efficiency (new object creation)
+      create: (ctx) => ProductsProvider(),
       child: MaterialApp(
         title: 'My Shop',
         theme: ThemeData(
@@ -22,6 +24,7 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: ProductOverviewScreen(),
+        routes: {ProductDetailScreen.routeName: (ctx) => ProductDetailScreen()},
       ),
     );
   }

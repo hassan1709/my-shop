@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/product.dart';
+import 'package:flutter/rendering.dart';
+import 'product.dart';
 
-class Products with ChangeNotifier {
+class ProductsProvider with ChangeNotifier {
   List<Product> _items = [
     Product(
       id: 'p1',
@@ -36,6 +37,14 @@ class Products with ChangeNotifier {
 
   List<Product> get items {
     return [..._items];
+  }
+
+  List<Product> get favouriteItems {
+    return _items.where((prodItem) => prodItem.isFavourite).toList();
+  }
+
+  Product findById(String id) {
+    return _items.firstWhere((prod) => prod.id == id);
   }
 
   void addProduct() {
