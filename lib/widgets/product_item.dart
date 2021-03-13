@@ -7,7 +7,7 @@ import '../providers/cart_items_provider.dart';
 class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final product = Provider.of<ProductProvider>(context, listen: false);
+    final product = Provider.of<ProductProvider>(context);
     final cart = Provider.of<CartItemsProvider>(context, listen: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -42,6 +42,21 @@ class ProductItem extends StatelessWidget {
             color: Theme.of(context).accentColor,
             onPressed: () {
               cart.addItem(product.id, product.price, product.title);
+              // Scaffold.of(context).showSnackBar(snackbar)
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Added item to cart!'),
+                  duration: Duration(seconds: 2),
+                  action: SnackBarAction(
+                    label: 'UNDO',
+                    onPressed: () {
+                      cart.removeSingleItem(product.id);
+                      print('Removing item you just added, done.');
+                    },
+                  ),
+                ),
+              );
             },
           ),
         ),
