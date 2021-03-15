@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../providers/product_provider.dart';
+import '../providers/products_items_provider.dart';
+import 'package:provider/provider.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const routeName = '/edit-product';
@@ -17,6 +19,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _imageUrlFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
   final _validationMessage = 'Please provide a value for the';
+  var _appBarTitle = 'Add Product';
   var _editedProduct = ProductProvider(
     id: null,
     title: '',
@@ -24,6 +27,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
     price: 0,
     imageUrl: '',
   );
+
+  var _isInit = true;
 
   @override
   void initState() {
@@ -47,6 +52,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
   }
 
+  void _updateProduct(String field, String value) {
+    _editedProduct = ProductProvider(
+      id: _editedProduct.id,
+      title: field == 'title' ? value : _editedProduct.title,
+      description: field == 'description' ? value : _editedProduct.description,
+      price: field == 'price' ? double.parse(value) : _editedProduct.price,
+      imageUrl: field == 'imageUrl' ? value : _editedProduct.imageUrl,
+      isFavourite: _editedProduct.isFavourite,
+    );
+  }
+
   void _saveForm() {
     final isValid = _form.currentState.validate();
     if (!isValid) {
@@ -54,17 +70,37 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
 
     _form.currentState.save();
-    print(_editedProduct.title);
-    print(_editedProduct.description);
-    print(_editedProduct.price);
-    print(_editedProduct.imageUrl);
+
+    if (_editedProduct.id != null) {
+      Provider.of<ProductItemsProvider>(context, listen: false).updateProduct(_editedProduct.id, _editedProduct);
+    } else {
+      Provider.of<ProductItemsProvider>(context, listen: false).addProduct(_editedProduct);
+    }
+
+    Navigator.of(context).pop();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      final productId = ModalRoute.of(context).settings.arguments as String;
+
+      if (productId != null) {
+        _editedProduct = Provider.of<ProductItemsProvider>(context, listen: false).findById(productId);
+        _imageUrlController.text = _editedProduct.imageUrl;
+        _appBarTitle = 'Edit Product';
+      }
+    }
+
+    _isInit = false;
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Product'),
+        title: Text(_appBarTitle),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.save),
@@ -80,6 +116,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
             child: Column(
               children: <Widget>[
                 TextFormField(
+                  initialValue: _editedProduct.title,
                   decoration: InputDecoration(labelText: 'Title'),
                   textInputAction: TextInputAction.next,
                   onFieldSubmitted: (_) {
@@ -93,16 +130,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     return null;
                   },
                   onSaved: (value) {
-                    _editedProduct = ProductProvider(
-                      id: _editedProduct.id,
-                      title: value,
-                      description: _editedProduct.description,
-                      price: _editedProduct.price,
-                      imageUrl: _editedProduct.imageUrl,
-                    );
+                    _updateProduct('title', value);
                   },
                 ),
                 TextFormField(
+                  initialValue: _editedProduct.price <= 0 ? '' : _editedProduct.price.toString(),
                   decoration: InputDecoration(labelText: 'Price'),
                   textInputAction: TextInputAction.next,
                   keyboardType: TextInputType.number,
@@ -119,16 +151,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     return null;
                   },
                   onSaved: (value) {
-                    _editedProduct = ProductProvider(
-                      id: _editedProduct.id,
-                      title: _editedProduct.title,
-                      description: _editedProduct.description,
-                      price: double.parse(value),
-                      imageUrl: _editedProduct.imageUrl,
-                    );
+                    _updateProduct('price', value);
                   },
                 ),
                 TextFormField(
+                  initialValue: _editedProduct.description,
                   decoration: InputDecoration(labelText: 'Description'),
                   maxLines: 3,
                   keyboardType: TextInputType.multiline,
@@ -144,13 +171,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     return null;
                   },
                   onSaved: (value) {
-                    _editedProduct = ProductProvider(
-                      id: _editedProduct.id,
-                      title: _editedProduct.title,
-                      description: value,
-                      price: _editedProduct.price,
-                      imageUrl: _editedProduct.imageUrl,
-                    );
+                    _updateProduct('description', value);
                   },
                 ),
                 Row(
@@ -197,13 +218,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           _saveForm();
                         },
                         onSaved: (value) {
-                          _editedProduct = ProductProvider(
-                            id: _editedProduct.id,
-                            title: _editedProduct.title,
-                            description: _editedProduct.description,
-                            price: _editedProduct.price,
-                            imageUrl: value,
-                          );
+                          _updateProduct('imageUrl', value);
                         },
                       ),
                     )
