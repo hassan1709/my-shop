@@ -17,8 +17,8 @@ class ProductProvider with ChangeNotifier {
     this.isFavourite = false,
   });
 
-  void toggleFavourite() {
-    isFavourite = !isFavourite;
-    notifyListeners();
-  }
+  // void toggleFavourite() {
+  //   isFavourite = !isFavourite;
+  //   notifyListeners();
+  // }
 }

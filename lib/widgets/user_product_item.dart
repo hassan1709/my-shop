@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../screens/edit_product_screen.dart';
 import '../providers/products_items_provider.dart';
+import '../widgets/error_dialog.dart';
 
 class UserProductItem extends StatelessWidget {
   final String id;
@@ -31,8 +32,12 @@ class UserProductItem extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.delete),
-              onPressed: () {
-                Provider.of<ProductItemsProvider>(context, listen: false).deleteProduct(id);
+              onPressed: () async {
+                try {
+                  await Provider.of<ProductItemsProvider>(context, listen: false).deleteProduct(id);
+                } catch (error) {
+                  await ErrorDialog.showErrorDialog(context, error.toString());
+                }
               },
               color: Theme.of(context).errorColor,
             ),

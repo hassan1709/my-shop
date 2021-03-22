@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import '../screens/product_detail_screen.dart';
 import 'package:provider/provider.dart';
+
+import '../screens/product_detail_screen.dart';
 import '../providers/product_provider.dart';
+import '../providers/products_items_provider.dart';
 import '../providers/cart_items_provider.dart';
 
 class ProductItem extends StatelessWidget {
@@ -9,6 +11,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final product = Provider.of<ProductProvider>(context);
     final cart = Provider.of<CartItemsProvider>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
@@ -29,8 +32,15 @@ class ProductItem extends StatelessWidget {
           leading: IconButton(
             icon: Icon(product.isFavourite ? Icons.favorite : Icons.favorite_border),
             color: Theme.of(context).accentColor,
-            onPressed: () {
-              product.toggleFavourite();
+            onPressed: () async {
+              try {
+                await Provider.of<ProductItemsProvider>(context, listen: false).toggleFavourite(product);
+              } catch (error) {
+                scaffoldMessenger.showSnackBar(SnackBar(
+                  content: Text(error.toString()),
+                  duration: Duration(seconds: 3),
+                ));
+              }
             },
           ),
           title: Text(
