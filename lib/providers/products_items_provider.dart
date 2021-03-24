@@ -60,6 +60,11 @@ class ProductItemsProvider with ChangeNotifier {
       }
 
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
+
+      if (extractedData == null) {
+        return;
+      }
+
       final List<ProductProvider> loadedProducts = [];
 
       extractedData.forEach((prodId, prodData) {
@@ -78,7 +83,7 @@ class ProductItemsProvider with ChangeNotifier {
         notifyListeners();
       });
     } catch (error) {
-      throw error;
+      throw HttpException('Could not get the products. There was a problem with the server.');
     }
   }
 

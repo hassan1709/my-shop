@@ -25,7 +25,7 @@ class _OrderItemState extends State<OrderItem> {
             title: Text('\$${widget.order.amount.toStringAsFixed(2)}'),
             subtitle: Text(DateFormat('dd/MM/yyyy hh:mm').format(widget.order.dateTime)),
             trailing: IconButton(
-              icon: Icon(_expanded ? Icons.expand_more : Icons.expand_less),
+              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
               onPressed: () {
                 setState(() {
                   _expanded = !_expanded;
@@ -36,7 +36,7 @@ class _OrderItemState extends State<OrderItem> {
           if (_expanded)
             Container(
               padding: EdgeInsets.all(15),
-              height: min(widget.order.products.length * 20.0 + 20, 100),
+              height: min(widget.order.products.length * 20.0 + 30, 100),
               child: ListView(
                 children: widget.order.products
                     .map(
