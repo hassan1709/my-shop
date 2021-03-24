@@ -4,6 +4,7 @@ import '../providers/cart_items_provider.dart';
 import '../providers/orders_provider.dart';
 import '../widgets/cart_item.dart';
 import 'orders_screen.dart';
+import '../widgets/error_dialog.dart';
 
 class CartScreen extends StatelessWidget {
   static const routeName = '/cart';
@@ -35,17 +36,8 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  FlatButton(
-                    child: Text('ORDER NOW'),
-                    onPressed: () {
-                      Provider.of<OrdersProvider>(context, listen: false).addOrder(
-                        cartItemsProvider.items.values.toList(),
-                        cartItemsProvider.totalAmount,
-                      );
-                      cartItemsProvider.clear();
-                      Navigator.of(context).pushNamed(OrdersScreen.routeName);
-                    },
-                    textColor: Theme.of(context).primaryColor,
+                  OrderButton(
+                    cartItemsProvider: cartItemsProvider,
                   ),
                 ],
               ),
@@ -68,6 +60,53 @@ class CartScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cartItemsProvider,
+  }) : super(key: key);
+
+  final CartItemsProvider cartItemsProvider;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      child: _isLoading ? CircularProgressIndicator() : Text('ORDER NOW'),
+      onPressed: (widget.cartItemsProvider.totalAmount <= 0 || _isLoading)
+          ? null
+          : () async {
+              try {
+                setState(() {
+                  _isLoading = true;
+                });
+
+                await Provider.of<OrdersProvider>(context, listen: false).addOrder(
+                  widget.cartItemsProvider.items.values.toList(),
+                  widget.cartItemsProvider.totalAmount,
+                );
+
+                setState(() {
+                  _isLoading = false;
+                });
+                widget.cartItemsProvider.clear();
+                Navigator.of(context).pushNamed(OrdersScreen.routeName);
+              } catch (error) {
+                await ErrorDialog.showErrorDialog(context, error.toString());
+              }
+            },
+      // textColor: Theme.of(context).primaryColor,
+      style: TextButton.styleFrom(primary: Theme.of(context).primaryColor),
     );
   }
 }
