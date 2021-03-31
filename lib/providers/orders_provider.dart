@@ -19,9 +19,7 @@ class OrdersProvider with ChangeNotifier {
     try {
       final response = await http.get(url);
 
-      if (response.statusCode >= 400) {
-        throw HttpException('Could not get the orders. There was a problem with the server.');
-      }
+      HttpException.validateResponse(response);
 
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
 
@@ -52,7 +50,7 @@ class OrdersProvider with ChangeNotifier {
         notifyListeners();
       });
     } catch (error) {
-      throw HttpException('Could not get the orders. There was a problem with the server.');
+      throw HttpException('Could not get the orders.\n' + error.toString());
     }
   }
 
@@ -79,9 +77,7 @@ class OrdersProvider with ChangeNotifier {
 
       final response = await http.post(url, body: body);
 
-      if (response.statusCode >= 400) {
-        throw HttpException('Could not add the order. There was a problem with the server.');
-      }
+      HttpException.validateResponse(response);
 
       _orders.insert(
           0,
@@ -94,7 +90,7 @@ class OrdersProvider with ChangeNotifier {
 
       notifyListeners();
     } catch (error) {
-      throw error;
+      throw HttpException('Could not create the order.\n' + error.toString());
     }
   }
 }

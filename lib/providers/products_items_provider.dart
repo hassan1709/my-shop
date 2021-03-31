@@ -55,11 +55,9 @@ class ProductItemsProvider with ChangeNotifier {
     try {
       final response = await http.get(url);
 
-      if (response.statusCode >= 400) {
-        throw HttpException('Could not get the products. There was a problem with the server.');
-      }
+      HttpException.validateResponse(response);
 
-      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      var extractedData = json.decode(response.body) as Map<String, dynamic>;
 
       if (extractedData == null) {
         return;
@@ -83,7 +81,7 @@ class ProductItemsProvider with ChangeNotifier {
         notifyListeners();
       });
     } catch (error) {
-      throw HttpException('Could not get the products. There was a problem with the server.');
+      throw HttpException('Could not get the products.\n' + error.toString());
     }
   }
 
@@ -101,9 +99,7 @@ class ProductItemsProvider with ChangeNotifier {
         }),
       );
 
-      if (response.statusCode >= 400) {
-        throw HttpException('Could not add the product. There was a problem with the server.');
-      }
+      HttpException.validateResponse(response);
 
       final newProduct = ProductProvider(
         id: json.decode(response.body)['name'],
@@ -116,7 +112,7 @@ class ProductItemsProvider with ChangeNotifier {
       _items.add(newProduct);
       notifyListeners();
     } catch (error) {
-      throw error;
+      throw HttpException('Could not add the product.\n' + error.toString());
     }
   }
 
@@ -137,14 +133,12 @@ class ProductItemsProvider with ChangeNotifier {
           }),
         );
 
-        if (response.statusCode >= 400) {
-          throw HttpException('Could not update the product. There was a problem with the server.');
-        }
+        HttpException.validateResponse(response);
 
         _items[index] = product;
         notifyListeners();
       } catch (error) {
-        throw error;
+        throw HttpException('Could not update the product.\n' + error.toString());
       }
     }
   }
@@ -155,14 +149,12 @@ class ProductItemsProvider with ChangeNotifier {
       // Deleting is not throwing  error by default.
       final response = await http.delete(url);
 
-      if (response.statusCode >= 400) {
-        throw HttpException('Could not delete the product. There was a problem in the server.');
-      }
+      HttpException.validateResponse(response);
 
       _items.removeWhere((prod) => prod.id == id);
       notifyListeners();
     } catch (error) {
-      throw error;
+      throw HttpException('Could not delete the product.\n' + error.toString());
     }
   }
 
@@ -181,16 +173,11 @@ class ProductItemsProvider with ChangeNotifier {
         }),
       );
 
-      if (response.statusCode >= 400) {
-        // product.isFavourite = !product.isFavourite;
-        // notifyListeners();
-        throw HttpException(
-            'Could not set the product as favourite (or no favourite). There was a problem with the server.');
-      }
+      HttpException.validateResponse(response);
     } catch (error) {
       product.isFavourite = !product.isFavourite;
       notifyListeners();
-      throw error;
+      throw HttpException('Could not set the product status.\n' + error.toString());
     }
   }
 }
