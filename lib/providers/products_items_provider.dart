@@ -90,7 +90,7 @@ class ProductItemsProvider with ChangeNotifier {
   }
 
   Future<void> addProduct(ProductProvider product) async {
-    var url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products.json?auth=$authToken');
+    final url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products.json?auth=$authToken');
     try {
       final response = await http.post(
         url,
@@ -124,7 +124,7 @@ class ProductItemsProvider with ChangeNotifier {
     final index = _items.indexWhere((prod) => prod.id == id);
 
     if (index >= 0) {
-      var url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
+      final url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
 
       try {
         final response = await http.patch(
@@ -148,7 +148,7 @@ class ProductItemsProvider with ChangeNotifier {
   }
 
   Future<void> deleteProduct(String id) async {
-    var url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
+    final url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
     try {
       // Deleting is not throwing  error by default.
       final response = await http.delete(url);
@@ -167,7 +167,7 @@ class ProductItemsProvider with ChangeNotifier {
     product.isFavourite = !product.isFavourite;
     notifyListeners();
 
-    var url =
+    final url =
         Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products/${product.id}.json?auth=$authToken');
 
     try {
