@@ -10,15 +10,16 @@ import '../models/HttpException.dart';
 class OrdersProvider with ChangeNotifier {
   List<Order> _orders = [];
   final String authToken;
+  final String userId;
 
-  OrdersProvider(this.authToken, this._orders);
+  OrdersProvider(this.authToken, this.userId, this._orders);
 
   List<Order> get orders {
     return [..._orders];
   }
 
   Future<void> getOrders() async {
-    final url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/orders.json?auth=$authToken');
+    final url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/orders/$userId.json?auth=$authToken');
     try {
       final response = await http.get(url);
 
@@ -58,7 +59,7 @@ class OrdersProvider with ChangeNotifier {
   }
 
   Future<void> addOrder(List<Cart> cartProducts, double total) async {
-    final url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/orders.json?auth=$authToken');
+    final url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/orders/$userId.json?auth=$authToken');
     final timestamp = DateTime.now();
 
     try {

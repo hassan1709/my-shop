@@ -5,12 +5,14 @@ import '../screens/product_detail_screen.dart';
 import '../providers/product_provider.dart';
 import '../providers/products_items_provider.dart';
 import '../providers/cart_items_provider.dart';
+import '../providers/auth.dart';
 
 class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = Provider.of<ProductProvider>(context);
     final cart = Provider.of<CartItemsProvider>(context, listen: false);
+    final authData = Provider.of<Auth>(context, listen: false);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -34,7 +36,9 @@ class ProductItem extends StatelessWidget {
             color: Theme.of(context).accentColor,
             onPressed: () async {
               try {
-                await Provider.of<ProductItemsProvider>(context, listen: false).toggleFavourite(product);
+                //await Provider.of<ProductItemsProvider>(context, listen: false).toggleFavourite(product);
+                await Provider.of<ProductItemsProvider>(context, listen: false)
+                    .toggleFavourite2(product, authData.userId);
               } catch (error) {
                 scaffoldMessenger.showSnackBar(SnackBar(
                   content: Text(error.toString()),
@@ -52,7 +56,6 @@ class ProductItem extends StatelessWidget {
             color: Theme.of(context).accentColor,
             onPressed: () {
               cart.addItem(product.id, product.price, product.title);
-              // Scaffold.of(context).showSnackBar(snackbar)
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

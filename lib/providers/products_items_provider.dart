@@ -39,8 +39,9 @@ class ProductItemsProvider with ChangeNotifier {
   ];
 
   final String authToken;
+  final String userId;
 
-  ProductItemsProvider(this.authToken, this._items);
+  ProductItemsProvider(this.authToken, this.userId, this._items);
 
   List<ProductProvider> get items {
     return [..._items];
@@ -54,18 +55,24 @@ class ProductItemsProvider with ChangeNotifier {
     return _items.firstWhere((prod) => prod.id == id);
   }
 
-  Future<void> getProducts() async {
-    final url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products.json?auth=$authToken');
+  Future<void> getProducts([bool filterByUser = false]) async {
+    _items.clear();
+    final filter = filterByUser ? 'orderBy="creatorId"&equalTo="$userId"' : '';
+    var url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/products.json?auth=$authToken&$filter');
     try {
       final response = await http.get(url);
-
       HttpException.validateResponse(response);
 
-      var extractedData = json.decode(response.body) as Map<String, dynamic>;
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
 
       if (extractedData == null) {
         return;
       }
+
+      url = Uri.parse('https://my-shop-90800-default-rtdb.firebaseio.com/userFavourites/$userId.json?auth=$authToken');
+      final favouritesResponse = await http.get(url);
+      HttpException.validateResponse(favouritesResponse);
+      final favouriteData = json.decode(favouritesResponse.body) as Map<String, dynamic>;
 
       final List<ProductProvider> loadedProducts = [];
 
@@ -77,7 +84,7 @@ class ProductItemsProvider with ChangeNotifier {
             description: prodData['description'],
             price: prodData['price'],
             imageUrl: prodData['imageUrl'],
-            isFavourite: prodData['isFavourite'],
+            isFavourite: favouriteData == null ? false : favouriteData[prodId] ?? false,
           ),
         );
 
@@ -99,7 +106,7 @@ class ProductItemsProvider with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavourite': product.isFavourite,
+          'creatorId': userId,
         }),
       );
 
@@ -176,6 +183,30 @@ class ProductItemsProvider with ChangeNotifier {
         body: json.encode({
           'isFavourite': product.isFavourite,
         }),
+      );
+
+      HttpException.validateResponse(response);
+    } catch (error) {
+      product.isFavourite = !product.isFavourite;
+      notifyListeners();
+      throw HttpException('Could not set the product status.\n' + error.toString());
+    }
+  }
+
+  Future<void> toggleFavourite2(ProductProvider product, String userId) async {
+    // Updating optimistically
+    product.isFavourite = !product.isFavourite;
+    notifyListeners();
+
+    final url = Uri.parse(
+        'https://my-shop-90800-default-rtdb.firebaseio.com/userFavourites/$userId/${product.id}.json?auth=$authToken');
+
+    try {
+      final response = await http.put(
+        url,
+        body: json.encode(
+          product.isFavourite,
+        ),
       );
 
       HttpException.validateResponse(response);

@@ -7,21 +7,38 @@ import '../widgets/app_drawer.dart';
 import '../screens/edit_product_screen.dart';
 import '../widgets/error_dialog.dart';
 
-class UserProductsScreen extends StatelessWidget {
+class UserProductsScreen extends StatefulWidget {
   static const routeName = '/user-products';
 
-  Future<void> _refreshProducts(BuildContext context) async {
+  @override
+  _UserProductsScreenState createState() => _UserProductsScreenState();
+}
+
+class _UserProductsScreenState extends State<UserProductsScreen> {
+  Future _userProducts;
+
+  Future _refreshProducts(BuildContext context) async {
     try {
       // No need to listen to changes at this point
-      await Provider.of<ProductItemsProvider>(context, listen: false).getProducts();
+      await Provider.of<ProductItemsProvider>(context, listen: false).getProducts(true);
+      final ProductItemsProvider products = Provider.of<ProductItemsProvider>(context, listen: false);
+
+      return products.items;
     } catch (error) {
       await ErrorDialog.showErrorDialog(context, error.toString());
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _userProducts = _refreshProducts(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final ProductItemsProvider products = Provider.of<ProductItemsProvider>(context);
+    print('Calling build');
+    //final ProductItemsProvider products = Provider.of<ProductItemsProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Products'),
@@ -36,28 +53,37 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: AppDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () => _refreshProducts(context),
-        child: products.items.length <= 0
+      body: FutureBuilder(
+        future: _userProducts,
+        builder: (ctx, snapshot) => snapshot.connectionState == ConnectionState.waiting
             ? Center(
-                child: Text(
-                  'No Products Available.',
-                  style: TextStyle(fontSize: 30),
-                ),
+                child: CircularProgressIndicator(),
               )
-            : Padding(
-                padding: EdgeInsets.all(8),
-                child: ListView.builder(
-                  itemCount: products.items.length,
-                  itemBuilder: (_, i) => Column(
-                    children: <Widget>[
-                      UserProductItem(
-                        products.items[i].id,
-                        products.items[i].title,
-                        products.items[i].imageUrl,
-                      ),
-                      Divider(),
-                    ],
+            : RefreshIndicator(
+                onRefresh: () => _refreshProducts(context),
+                child: Consumer<ProductItemsProvider>(
+                  builder: (ctx, products, _) => Padding(
+                    padding: EdgeInsets.all(8),
+                    child: products.items.length <= 0
+                        ? Center(
+                            child: Text(
+                              'No Products Available.',
+                              style: TextStyle(fontSize: 30),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: products.items.length,
+                            itemBuilder: (_, i) => Column(
+                              children: <Widget>[
+                                UserProductItem(
+                                  products.items[i].id,
+                                  products.items[i].title,
+                                  products.items[i].imageUrl,
+                                ),
+                                Divider(),
+                              ],
+                            ),
+                          ),
                   ),
                 ),
               ),

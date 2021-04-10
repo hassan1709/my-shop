@@ -41,10 +41,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
               return Center(child: Text('${dataSnapshot.error.toString()}'));
             } else {
               return Consumer<OrdersProvider>(
-                  builder: (ctx, orderData, child) => ListView.builder(
-                        itemCount: orderData.orders.length,
-                        itemBuilder: (ctx, i) => OrderItem(orderData.orders[i]),
-                      ));
+                  builder: (ctx, orderData, child) => orderData.orders.length <= 0
+                      ? Center(
+                          child: Text(
+                            'No Orders Available.',
+                            style: TextStyle(fontSize: 30),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: orderData.orders.length,
+                          itemBuilder: (ctx, i) => OrderItem(orderData.orders[i]),
+                        ));
             }
           }
         },
