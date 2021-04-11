@@ -2,8 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/order.dart';
-import '../providers/cart_items_provider.dart';
-import '../models/order.dart';
 import '../models/cart.dart';
 import '../models/HttpException.dart';
 

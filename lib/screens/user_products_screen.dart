@@ -37,7 +37,6 @@ class _UserProductsScreenState extends State<UserProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('Calling build');
     //final ProductItemsProvider products = Provider.of<ProductItemsProvider>(context);
     return Scaffold(
       appBar: AppBar(
